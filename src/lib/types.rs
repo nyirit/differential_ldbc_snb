@@ -5,6 +5,16 @@ pub type Id = u64;  // todo
 
 named_tuple!(
     #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
+    pub struct Forum {
+        pub id: Id,
+        pub created: Date,
+        deleted: Date,
+        pub title: String,
+    }
+);
+
+named_tuple!(
+    #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
     pub struct Post {
         pub id: Id,
         created: Date,
@@ -59,6 +69,12 @@ named_tuple!(
 pub type TagClass = Tag;
 
 // todo remove duplicate implementations?
+impl Ord for Forum {
+    fn cmp(&self, other: &Self) -> Ordering {
+        return self.field_values().cmp(&other.field_values());
+    }
+}
+
 impl Ord for Post {
     fn cmp(&self, other: &Self) -> Ordering {
         return self.field_values().cmp(&other.field_values());

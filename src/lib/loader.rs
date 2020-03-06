@@ -29,6 +29,23 @@ fn parse_date(date: String) -> Date {
     return chrono::DateTime::parse_from_rfc3339(date.as_str()).expect("Failed to parse DateTime").timestamp();
 }
 
+pub fn load_forum(base_path: &str, index: usize, peers: usize) -> Vec<Forum> {
+    let data = load_data(&format!("{}dynamic/forum_0_0.csv", base_path), index, peers);
+
+    let mut result = Vec::<Forum>::new();
+
+    for row in data.into_iter() {
+        let mut row_iter = row.into_iter();
+        let created = parse_date(row_iter.next().unwrap());
+        let deleted = parse_date(row_iter.next().unwrap());
+        let id = row_iter.next().unwrap().parse::<Id>().unwrap();
+        let title = row_iter.next().unwrap().parse::<String>().unwrap();
+        result.push(Forum::new(id, created, deleted, title));
+    }
+
+    return result;
+}
+
 // FIXME
 #[allow(dead_code)]
 pub fn load_post(base_path: &str, index: usize, peers: usize) -> Vec<Post> {
