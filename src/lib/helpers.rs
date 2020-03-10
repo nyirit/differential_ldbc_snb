@@ -1,9 +1,13 @@
 use timely::dataflow::Scope;
 use differential_dataflow::Collection;
-use differential_dataflow::lattice::Lattice;
+use differential_dataflow::Data;
 use differential_dataflow::ExchangeData;
+use differential_dataflow::lattice::Lattice;
+use differential_dataflow::input::InputSession;
 
 use chrono::Utc;
+use differential_dataflow::trace::{TraceReader, BatchReader, Cursor};
+use std::fmt::Display;
 
 pub fn format_timestamp(timestamp: u64) -> String {
     chrono::DateTime::<Utc>::from(std::time::UNIX_EPOCH + std::time::Duration::from_secs(timestamp)).to_rfc3339()
@@ -47,33 +51,43 @@ where
         })
         .map(|(_hash, vec)| vec)
 }
-//pub fn print_trace<G, Tr>(trace: &mut Tr, round: usize)
-//where
-//    G: Scope,               // timely dataflow scope
-//    G::Timestamp: Lattice,  // differential dataflow timestamp constraint
-//    G::Timestamp: Lattice+Ord,
-//    Tr: TraceReader<Time=G::Timestamp> + Clone,
-//    Tr::Batch: BatchReader<Tr::Key, Tr::Val, G::Timestamp, Tr::R>,
-//    Tr::Cursor: Cursor<Tr::Key, Tr::Val, G::Timestamp, Tr::R>,
-//    Tr::R: isize
-//{
-//    if let Some((mut cursor, storage)) = trace.cursor_through(&[round+1]) {
-//        while let Some(_key) = cursor.get_key(&storage) {
-//            while let Some(val) = cursor.get_val(&storage) {
-//                let mut count: isize = 0;
-//                cursor.map_times(&storage, |time, &diff| {
-//                    if time.le(&(round+1)) {
-//                        count += diff;
-//                    }
-//                });
-//                if count > 0 {
-//                    println!("{} {:?} {:?}", count, _key, val);
-//                }
-//                cursor.step_val(&storage)
-//            }
-//            cursor.step_key(&storage);
-//        }
-//    } else {
-//        println!("COULDN'T GET CURSOR")
-//    }
-//}
+
+// Adds a vector to the InputSession adn advances time.
+pub fn input_insert_vec<T: Data>(data: Vec<T>, input: &mut InputSession<usize, T, isize>, next_time: usize) {
+    for element in data {
+        input.insert(element);
+    }
+    input.advance_to(next_time);
+    input.flush();
+}
+
+pub fn print_trace<T, Tr>(trace: &mut Tr, round: usize)
+where
+    Tr: TraceReader<Time=usize, Key=Vec<T>> + Clone,
+    Tr::Batch: BatchReader<Tr::Key, Tr::Val, usize, Tr::R>,
+    Tr::Cursor: Cursor<Tr::Key, Tr::Val, usize, Tr::R>,
+    T: Display
+{
+    if let Some((mut cursor, storage)) = trace.cursor_through(&[round+1]) {
+        while let Some(key) = cursor.get_key(&storage) {
+            while let Some(_val) = cursor.get_val(&storage) {
+                let count: isize = 1;
+                /*FIXME is this needed?
+                cursor.map_times(&storage, |time, &diff| {
+                    if time.le(&(round+1)) {
+                        count += diff;
+                    }
+                });*/
+                if count > 0 {
+                    for element in key {
+                        println!("{}", element);
+                    }
+                }
+                cursor.step_val(&storage)
+            }
+            cursor.step_key(&storage);
+        }
+    } else {
+        println!("Failed to get cursor :(")
+    }
+}

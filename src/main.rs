@@ -4,30 +4,22 @@ extern crate chrono;
 
 mod lib;
 
-use differential_dataflow::input::{Input, InputSession};
+use differential_dataflow::input::Input;
 use differential_dataflow::operators::{Join, Count, Threshold};
-use differential_dataflow::Data;
 use differential_dataflow::operators::arrange::ArrangeBySelf;
 use timely::dataflow::ProbeHandle;
 use timely::dataflow::operators::probe::Probe;
 
 use crate::lib::loader::*;
 use crate::lib::types::*;
-use crate::lib::helpers::{limit, format_timestamp};
+use crate::lib::helpers::{limit, format_timestamp, input_insert_vec, print_trace};
 
 static SELECTED_TAG_CLASS: &str = "MusicalArtist"; // fixme
 static SELECTED_COUNTRY: &str = "Niger"; // fixme
 
-fn add_input<T: Data>(data: Vec<T>, input: &mut InputSession<usize, T, isize>, next_time: usize) {
-    for element in data {
-        input.insert(element);
-    }
-    input.advance_to(next_time);
-    input.flush();
-}
-
 fn main() {
     timely::execute_from_args(std::env::args(), |worker| {
+
         //let mut timer = worker.timer();
         let index = worker.index();
         let peers = worker.peers();
@@ -129,35 +121,35 @@ fn main() {
 
         // add inputs
         let next_time: usize = 1;
-        add_input(load_forum(path.as_str(), index, peers), &mut forum_input, next_time);
-        add_input(load_tag_class(path.as_str(), index, peers), &mut tag_classes_input, next_time);
-        add_input(
+        input_insert_vec(load_forum(path.as_str(), index, peers), &mut forum_input, next_time);
+        input_insert_vec(load_tag_class(path.as_str(), index, peers), &mut tag_classes_input, next_time);
+        input_insert_vec(
             load_connection("static/tag_hasType_tagclass_0_0.csv", path.as_str(), index, peers),
             &mut tag_hastype_tagclass_input,
             next_time
         );
-        add_input(
+        input_insert_vec(
             load_dynamic_connection("dynamic/post_hasTag_tag_0_0.csv", path.as_str(), index, peers),
             &mut post_hastag_tag_input,
             next_time
         );
-        add_input(
+        input_insert_vec(
             load_dynamic_connection("dynamic/forum_containerOf_post_0_0.csv", path.as_str(), index, peers),
             &mut forum_cointainerof_post_input,
             next_time
         );
-        add_input(load_place(path.as_str(), index, peers), &mut place_input, next_time);
-        add_input(
+        input_insert_vec(load_place(path.as_str(), index, peers), &mut place_input, next_time);
+        input_insert_vec(
             load_connection("static/place_isPartOf_place_0_0.csv", path.as_str(), index, peers),
             &mut place_is_part_of_place_input,
             next_time
         );
-        add_input(
+        input_insert_vec(
             load_dynamic_connection("dynamic/forum_hasModerator_person_0_0.csv", path.as_str(), index, peers),
             &mut forum_hasmod_input,
             next_time
         );
-        add_input(
+        input_insert_vec(
             load_dynamic_connection("dynamic/person_isLocatedIn_place_0_0.csv", path.as_str(), index, peers),
             &mut located_in_input,
             next_time
@@ -168,32 +160,8 @@ fn main() {
             worker.step();
         }
 
-        // FIXME create separate function for printing trace...
-        use differential_dataflow::trace::TraceReader;
-        use differential_dataflow::trace::cursor::Cursor;
-        let round: usize = 1;
-        if let Some((mut cursor, storage)) = trace.cursor_through(&[round]) {
-            while let Some(key) = cursor.get_key(&storage) {
-                while let Some(_val) = cursor.get_val(&storage) {
-                    let mut count: isize = 0;
-                    cursor.map_times(&storage, |time, &diff| {
-                        if time.le(&(round)) {
-                            count += diff;
-                        }
-                    });
-                    if count > 0 {
-                        for element in key {
-                            println!("{}", element);
-                        }
-                    }
-                    cursor.step_val(&storage)
-                }
-                cursor.step_key(&storage);
-            }
-        } else {
-            println!("Failed to get cursor :(")
-        }
-        //print_trace(&mut trace, 0); // FIXME
+        print_trace(&mut trace, next_time);
+
 
     }).expect("Timely computation failed");
 }
