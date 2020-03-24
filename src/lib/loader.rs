@@ -154,3 +154,7 @@ pub fn load_dynamic_connection(filename: &str, base_path: &str, index: usize, pe
 
     return result;
 }
+
+pub fn load_bi_param(base_path: &str, bi_number: usize) -> Vec<Vec<String>> {
+    return load_data(&format!("{}substitution_parameters/bi_{}_param.txt", base_path, bi_number), 0, 1);
+}
