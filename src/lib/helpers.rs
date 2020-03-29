@@ -52,11 +52,12 @@ where
         .map(|(_hash, vec)| vec)
 }
 
-// Adds a vector to the InputSession adn advances time.
+// Adds a vector to the InputSession and advances time.
 pub fn input_insert_vec<T: Data>(data: Vec<T>, input: &mut InputSession<usize, T, isize>, next_time: usize) {
     for element in data {
         input.insert(element);
     }
+
     input.advance_to(next_time);
     input.flush();
 }

@@ -24,6 +24,7 @@ pub fn run(path: String, params: &Vec<String>) {
         let param_tag_class = param_tag_class_.clone();
         let param_country = param_country_.clone();
 
+        // create dataflow
         let
             (
                 mut trace,
@@ -96,7 +97,7 @@ pub fn run(path: String, params: &Vec<String>) {
             let result = counted_posts
                 .join(&forums_in_cities)
                 .map(|(forum_id, ((count, title, created), person_id))| (
-                    (count, Id::max_value()-forum_id),
+                    (count, Id::max_value()-forum_id), // sort fields
                     format!("{}|{}|{}|{}|{}", forum_id, title, format_timestamp(created as u64), person_id, count))
                 )
                 ;
@@ -156,6 +157,7 @@ pub fn run(path: String, params: &Vec<String>) {
             worker.step();
         }
 
+        // print results
         print_trace(&mut trace, next_time);
 
 

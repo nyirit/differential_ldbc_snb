@@ -30,6 +30,19 @@ named_tuple!(
 
 named_tuple!(
     #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
+    pub struct Comment {
+        pub id: Id,
+        created: Date,
+        deleted: Date,
+        ip: String,
+        browser: String,
+        content: String,
+        length: usize,
+    }
+);
+
+named_tuple!(
+    #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
     pub struct Tag {
         pub id: Id,
         pub name: String,
@@ -100,6 +113,12 @@ impl Ord for Connection {
 }
 
 impl Ord for DynamicConnection {
+    fn cmp(&self, other: &Self) -> Ordering {
+        return self.field_values().cmp(&other.field_values());
+    }
+}
+
+impl Ord for Comment {
     fn cmp(&self, other: &Self) -> Ordering {
         return self.field_values().cmp(&other.field_values());
     }

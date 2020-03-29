@@ -72,6 +72,26 @@ pub fn load_post(base_path: &str, index: usize, peers: usize) -> Vec<Post> {
 
 // FIXME
 #[allow(dead_code)]
+pub fn load_comment(base_path: &str, index: usize, peers: usize) -> Vec<Comment> {
+    let data = load_data(&format!("{}dynamic/comment_0_0.csv", base_path), index, peers);
+
+    let mut result = Vec::<Comment>::new();
+
+    for row in data.into_iter() {
+        let mut row_iter = row.into_iter();
+        let created = parse_date(row_iter.next().unwrap());
+        let deleted = parse_date(row_iter.next().unwrap());
+        let id = row_iter.next().unwrap().parse::<Id>().unwrap();
+        let ip = row_iter.next().unwrap().parse::<String>().unwrap();
+        let browser = row_iter.next().unwrap().parse::<String>().unwrap();
+        let content = row_iter.next().unwrap().parse::<String>().unwrap();
+        let length = row_iter.next().unwrap().parse().unwrap();
+        result.push(Comment::new(id, created, deleted, ip, browser, content, length));
+    }
+
+    return result;
+}
+
 pub fn load_tag(base_path: &str, index: usize, peers: usize) -> Vec<Tag> {
     let data = load_data(&format!("{}static/tag_0_0.csv", base_path), index, peers);
 

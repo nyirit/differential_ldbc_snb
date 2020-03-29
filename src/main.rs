@@ -14,6 +14,7 @@ fn main() {
 
     let runner = match query_id {
         4 => queries::q4::run,
+        6 => queries::q6::run,
         _ => panic!("Query {} is not yet implemented.", query_id)
     };
 
