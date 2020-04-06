@@ -74,7 +74,7 @@ pub fn run(path: String, params: &Vec<String>) {
                     |_message_id, _liker_person, message_creator| message_creator.clone()
                 ) // join creator for messages
                 .concat(
-                    &score_messages.map(|(person_id, _message_count)| person_id.clone())
+                    &score_messages.map(|(person_id, _message_count) : (Id, isize)| person_id)
                 ) // make sure to have each person, so add an extra value
                 .count()
                 ; // -> (person_id, like_count)
@@ -99,11 +99,11 @@ pub fn run(path: String, params: &Vec<String>) {
                 .map(
                     |(person_id, (((messages,), (likes,)), (replies,)))|
                         (
-                            (messages + 2*(replies-1) + 10*(likes-1), Id::max_value()-person_id), // sort fields
-                            format!("{}|{}|{}|{}|{}",
-                                person_id, replies-1, likes-1, messages,
-                                messages + 2*(replies-1) + 10*(likes-1)
-                            )
+                            (std::isize::MAX - (messages + 2*(replies-1) + 10*(likes-1)), person_id), // sort: -sort, +person_id
+                            vec![
+                                person_id.to_string(), (replies-1).to_string(), (likes-1).to_string(), messages.to_string(),
+                                (messages + 2*(replies-1) + 10*(likes-1)).to_string()
+                            ]
                         )
                 ) // map to final format
                 ;

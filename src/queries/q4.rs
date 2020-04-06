@@ -73,7 +73,7 @@ pub fn run(path: String, params: &Vec<String>) {
                 .count()
                 .join_map(
                     &forum.map(|forum| (forum.id().clone(), (forum.title().clone(), forum.created().clone()))),
-                    |forum_id, count, forum_data|
+                    |forum_id, count:&isize, forum_data|
                         (forum_id.clone(), (*count, forum_data.0.clone(), forum_data.1.clone()))
                 );
 
@@ -97,9 +97,10 @@ pub fn run(path: String, params: &Vec<String>) {
             let result = counted_posts
                 .join(&forums_in_cities)
                 .map(|(forum_id, ((count, title, created), person_id))| (
-                    (count, Id::max_value()-forum_id), // sort fields
-                    format!("{}|{}|{}|{}|{}", forum_id, title, format_timestamp(created as u64), person_id, count))
-                )
+                    (std::isize::MAX - count, forum_id), // sort: -count, +forum_id
+                    vec![forum_id.to_string(), title, format_timestamp(created as u64),
+                         person_id.to_string(), count.to_string()] // output vec
+                ))
                 ;
 
             let arrangement = limit(&result, 20)

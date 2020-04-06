@@ -7,7 +7,6 @@ use differential_dataflow::input::InputSession;
 
 use chrono::Utc;
 use differential_dataflow::trace::{TraceReader, BatchReader, Cursor};
-use std::fmt::Display;
 
 pub fn format_timestamp(timestamp: u64) -> String {
     chrono::DateTime::<Utc>::from(std::time::UNIX_EPOCH + std::time::Duration::from_secs(timestamp)).to_rfc3339()
@@ -31,13 +30,13 @@ where
     input
         .map(|(hash,(val, key))| (hash % 10000, (val, key)))
         .reduce(move |_key, input, output| {
-            for ((val, key), _wgt) in input.iter().rev().take(limit) {
+            for ((val, key), _wgt) in input.iter().take(limit) {
                 output.push(((val.clone(), key.clone()), 1));
             }
         })
         .map(|(hash, (val, key))| (hash % 100, (val, key)))
         .reduce(move |_key, input, output| {
-            for ((val, key), _wgt) in input.iter().rev().take(limit) {
+            for ((val, key), _wgt) in input.iter().take(limit) {
                 output.push(((val.clone(), key.clone()), 1));
             }
         })
@@ -46,7 +45,7 @@ where
     top_k
         .reduce(move |_zero, input, output| {
             let mut result = Vec::new();
-            result.extend(input.iter().rev().take(limit).map(|((_val, key),_wgt)| key.clone()));
+            result.extend(input.iter().take(limit).map(|((_val, key),_wgt)| key.clone()));
             output.push((result, 1));
         })
         .map(|(_hash, vec)| vec)
@@ -62,12 +61,11 @@ pub fn input_insert_vec<T: Data>(data: Vec<T>, input: &mut InputSession<usize, T
     input.flush();
 }
 
-pub fn print_trace<T, Tr>(trace: &mut Tr, round: usize)
+pub fn print_trace<Tr>(trace: &mut Tr, round: usize)
 where
-    Tr: TraceReader<Time=usize, Key=Vec<T>> + Clone,
+    Tr: TraceReader<Time=usize, Key=Vec<Vec<String>>> + Clone,
     Tr::Batch: BatchReader<Tr::Key, Tr::Val, usize, Tr::R>,
     Tr::Cursor: Cursor<Tr::Key, Tr::Val, usize, Tr::R>,
-    T: Display
 {
     if let Some((mut cursor, storage)) = trace.cursor_through(&[round+1]) {
         while let Some(key) = cursor.get_key(&storage) {
@@ -80,8 +78,8 @@ where
                     }
                 });*/
                 if count > 0 {
-                    for element in key {
-                        println!("{}", element);
+                    for row in key {
+                        println!("{}", row.join("|"));
                     }
                 }
                 cursor.step_val(&storage)
