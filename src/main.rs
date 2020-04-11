@@ -16,6 +16,7 @@ fn main() {
         4 => queries::q4::run,
         6 => queries::q6::run,
         8 => queries::q8::run,
+        14 => queries::q14::run,
         _ => panic!("Query {} is not yet implemented.", query_id)
     };
 

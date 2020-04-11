@@ -5,6 +5,21 @@ pub type Id = u64;  // todo
 
 named_tuple!(
     #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
+    pub struct Person {
+        pub id: Id,
+        created: Date,
+        deleted: Date,
+        pub first_name: String,
+        pub last_name: String,
+        gender: String,
+        birthday: String,
+        ip: String,
+        browser: String
+    }
+);
+
+named_tuple!(
+    #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
     pub struct Forum {
         pub id: Id,
         pub created: Date,
@@ -17,7 +32,7 @@ named_tuple!(
     #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
     pub struct Post {
         pub id: Id,
-        created: Date,
+        pub created: Date,
         deleted: Date,
         image: String,
         ip: String,
@@ -61,7 +76,7 @@ named_tuple!(
 named_tuple!(
     #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
     pub struct DynamicConnection {
-        created: Date,
+        pub created: Date,
         deleted: Date,
         pub a: Id,
         pub b: Id,
@@ -82,6 +97,12 @@ named_tuple!(
 pub type TagClass = Tag;
 
 // todo remove duplicate implementations?
+impl Ord for Person {
+    fn cmp(&self, other: &Self) -> Ordering {
+        return self.field_values().cmp(&other.field_values());
+    }
+}
+
 impl Ord for Forum {
     fn cmp(&self, other: &Self) -> Ordering {
         return self.field_values().cmp(&other.field_values());

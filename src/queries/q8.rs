@@ -63,7 +63,7 @@ pub fn run(path: String, params: &Vec<String>) {
                 .join_map(
                     &tag.map(|tag| (tag.id().clone(), tag.name().clone())),
                     |_tag_id, count: &isize, name: &String| (
-                        (std::isize::MAX - count.clone(), name.clone()),  // sort: -count, +name
+                        (std::isize::MAX - count, name.clone()),  // sort: -count, +name
                         vec![count.to_string(), name.to_string()]         // output vec
                     )
                 )
@@ -85,7 +85,7 @@ pub fn run(path: String, params: &Vec<String>) {
         let next_time: usize = 1;
         input_insert_vec(load_tag(path.as_str(), index, peers), &mut tag_input, next_time);
 
-        // insert hasTag relations
+        // insert hasTag relations both for posts and comments, to handle them together in the dataflow
         input_insert_vec(
             load_dynamic_connection("dynamic/post_hasTag_tag_0_0.csv", path.as_str(), index, peers),
             &mut has_tag_input,
@@ -96,7 +96,7 @@ pub fn run(path: String, params: &Vec<String>) {
             &mut has_tag_input,
             next_time
         );
-        // insert replyOf relations
+        // insert replyOf relations both for posts and comments, to handle them together in the dataflow
         input_insert_vec(
             load_dynamic_connection("dynamic/comment_replyOf_post_0_0.csv", path.as_str(), index, peers),
             &mut reply_of_input,

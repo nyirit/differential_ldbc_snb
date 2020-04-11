@@ -1,4 +1,5 @@
 use super::types::*;
+use unwrap::unwrap;
 
 fn load_data(filename: &str, index: usize, peers: usize) -> Vec<Vec<String>> {
     use std::io::{BufRead, BufReader};
@@ -25,8 +26,32 @@ fn load_data(filename: &str, index: usize, peers: usize) -> Vec<Vec<String>> {
     return data;
 }
 
-fn parse_date(date: String) -> Date {
-    return chrono::DateTime::parse_from_rfc3339(date.as_str()).expect("Failed to parse DateTime").timestamp();
+pub fn parse_datetime(date: String) -> Date {
+    let parsed = chrono::DateTime::parse_from_rfc3339(date.as_str());
+    return unwrap!(parsed, "Failed to parse DateTime: '{}'", date).timestamp();
+}
+
+pub fn load_person(base_path: &str, index: usize, peers: usize) -> Vec<Person> {
+    let data = load_data(&format!("{}dynamic/person_0_0.csv", base_path), index, peers);
+
+    let mut result = Vec::<Person>::new();
+
+    for row in data.into_iter() {
+        let mut row_iter = row.into_iter();
+        let created = parse_datetime(row_iter.next().unwrap());
+        let deleted = parse_datetime(row_iter.next().unwrap());
+        let id = row_iter.next().unwrap().parse::<Id>().unwrap();
+        let first_name = row_iter.next().unwrap().parse::<String>().unwrap();
+        let last_name = row_iter.next().unwrap().parse::<String>().unwrap();
+        let gender = row_iter.next().unwrap().parse::<String>().unwrap();
+        let birthday = row_iter.next().unwrap();
+        let location_ip = row_iter.next().unwrap().parse::<String>().unwrap();
+        let browser_used = row_iter.next().unwrap().parse::<String>().unwrap();
+
+        result.push(Person::new(id, created, deleted, first_name, last_name, gender, birthday, location_ip, browser_used));
+    }
+
+    return result;
 }
 
 pub fn load_forum(base_path: &str, index: usize, peers: usize) -> Vec<Forum> {
@@ -36,8 +61,8 @@ pub fn load_forum(base_path: &str, index: usize, peers: usize) -> Vec<Forum> {
 
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
-        let created = parse_date(row_iter.next().unwrap());
-        let deleted = parse_date(row_iter.next().unwrap());
+        let created = parse_datetime(row_iter.next().unwrap());
+        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let title = row_iter.next().unwrap().parse::<String>().unwrap();
         result.push(Forum::new(id, created, deleted, title));
@@ -55,8 +80,8 @@ pub fn load_post(base_path: &str, index: usize, peers: usize) -> Vec<Post> {
 
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
-        let created = parse_date(row_iter.next().unwrap());
-        let deleted = parse_date(row_iter.next().unwrap());
+        let created = parse_datetime(row_iter.next().unwrap());
+        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let image = row_iter.next().unwrap().parse::<String>().unwrap();
         let ip = row_iter.next().unwrap().parse::<String>().unwrap();
@@ -79,8 +104,8 @@ pub fn load_comment(base_path: &str, index: usize, peers: usize) -> Vec<Comment>
 
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
-        let created = parse_date(row_iter.next().unwrap());
-        let deleted = parse_date(row_iter.next().unwrap());
+        let created = parse_datetime(row_iter.next().unwrap());
+        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let ip = row_iter.next().unwrap().parse::<String>().unwrap();
         let browser = row_iter.next().unwrap().parse::<String>().unwrap();
@@ -165,8 +190,8 @@ pub fn load_dynamic_connection(filename: &str, base_path: &str, index: usize, pe
 
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
-        let created = parse_date(row_iter.next().unwrap());
-        let deleted = parse_date(row_iter.next().unwrap());
+        let created = parse_datetime(row_iter.next().unwrap());
+        let deleted = parse_datetime(row_iter.next().unwrap());
         let id1 = row_iter.next().unwrap().parse::<Id>().unwrap();
         let id2 = row_iter.next().unwrap().parse::<Id>().unwrap();
         result.push(DynamicConnection::new(created, deleted, id1, id2));
