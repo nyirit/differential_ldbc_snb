@@ -1,3 +1,7 @@
+/*
+LDBC SNB BI query 5. Most active posters of a given topic
+https://ldbc.github.io/ldbc_snb_docs_snapshot/bi-read-05.pdf
+*/
 use differential_dataflow::input::Input;
 use differential_dataflow::operators::{Join, Count, Threshold};
 use timely::dataflow::ProbeHandle;

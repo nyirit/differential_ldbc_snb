@@ -6,22 +6,27 @@ mod lib;
 mod queries;
 
 fn main() {
-    let query_id = std::env::args().nth(1)
-        .expect("Must supply query.")
+    let mut args: Vec<String> = std::env::args().collect();
+
+    // exec path not needed
+    args.remove(0);
+
+    let query_id = args.remove(0)
         .parse::<usize>().expect("Cannot parse query id.");
-    let path = std::env::args().nth(2).expect("Must supply data path.");
-    let params = lib::loader::load_bi_param(path.as_str(), query_id);
+
+    let path = args.remove(0);
+
+    // User load_bi_param to load a set of predefined query parameters
+    // let params = lib::loader::load_bi_param(path.as_str(), query_id);
 
     let runner = match query_id {
-        4 => queries::q4::run,
-        6 => queries::q6::run,
-        8 => queries::q8::run,
-        14 => queries::q14::run,
+        3 => queries::q3::run,
+        5 => queries::q5::run,
+        7 => queries::q7::run,
+        -14 => queries::ql14::run, // -14, because it was dropped in newer LDBC specs.
+        15 => queries::q15::run,
         _ => panic!("Query {} is not yet implemented.", query_id)
     };
 
-    for param in params {
-        println!("========= RUNNING QUERY {} WITH PARAMS {:?} =========", query_id, param);
-        runner(path.clone(), &param);
-    }
+    runner(path.clone(), &args);
 }

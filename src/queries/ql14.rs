@@ -1,3 +1,10 @@
+/*
+Legacy LDBC SNB BI query 14. Top thread initiator
+https://arxiv.org/pdf/2001.02299.pdf#page=69
+
+Note: in the newer version of LDBC SNB BI this query is omitted.
+*/
+
 use timely::dataflow::ProbeHandle;
 use differential_dataflow::input::Input;
 

@@ -1,3 +1,7 @@
+/*
+LDBC SNB BI query 7. Related topics
+https://ldbc.github.io/ldbc_snb_docs_snapshot/bi-read-07.pdf
+*/
 use differential_dataflow::input::Input;
 use timely::dataflow::ProbeHandle;
 
@@ -42,6 +46,7 @@ pub fn run(path: String, params: &Vec<String>) {
                 .filter(move |x| param_tag.eq(x.name()))
                 .map(|tag| tag.id().clone());
 
+            // collect all the messages (posts and comments) which were created with the given Tag
             let messages_with_tag = has_tag
                 .map(|conn| (conn.b().clone(), conn.a().clone())) // -> tag_id, message_id
                 .semijoin(&needed_tag)

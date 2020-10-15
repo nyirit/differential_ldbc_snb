@@ -1,3 +1,9 @@
+/*
+LDBC SNB BI query 3. Popular topics in a country
+https://ldbc.github.io/ldbc_snb_docs_snapshot/bi-read-03.pdf
+*/
+
+
 use differential_dataflow::input::Input;
 use differential_dataflow::operators::{Join, Count, Threshold};
 use differential_dataflow::operators::arrange::ArrangeBySelf;
