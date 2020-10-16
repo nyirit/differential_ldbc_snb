@@ -12,7 +12,7 @@ fn main() {
     args.remove(0);
 
     let query_id = args.remove(0)
-        .parse::<usize>().expect("Cannot parse query id.");
+        .parse::<isize>().expect("Cannot parse query id.");
 
     let path = args.remove(0);
 
