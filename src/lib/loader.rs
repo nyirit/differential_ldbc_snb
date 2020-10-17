@@ -39,7 +39,6 @@ pub fn load_person(base_path: &str, index: usize, peers: usize) -> Vec<Person> {
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
         let created = parse_datetime(row_iter.next().unwrap());
-        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let first_name = row_iter.next().unwrap().parse::<String>().unwrap();
         let last_name = row_iter.next().unwrap().parse::<String>().unwrap();
@@ -48,7 +47,7 @@ pub fn load_person(base_path: &str, index: usize, peers: usize) -> Vec<Person> {
         let location_ip = row_iter.next().unwrap().parse::<String>().unwrap();
         let browser_used = row_iter.next().unwrap().parse::<String>().unwrap();
 
-        result.push(Person::new(id, created, deleted, first_name, last_name, gender, birthday, location_ip, browser_used));
+        result.push(Person::new(id, created, first_name, last_name, gender, birthday, location_ip, browser_used));
     }
 
     return result;
@@ -62,10 +61,9 @@ pub fn load_forum(base_path: &str, index: usize, peers: usize) -> Vec<Forum> {
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
         let created = parse_datetime(row_iter.next().unwrap());
-        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let title = row_iter.next().unwrap().parse::<String>().unwrap();
-        result.push(Forum::new(id, created, deleted, title));
+        result.push(Forum::new(id, created, title));
     }
 
     return result;
@@ -81,7 +79,6 @@ pub fn load_post(base_path: &str, index: usize, peers: usize) -> Vec<Post> {
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
         let created = parse_datetime(row_iter.next().unwrap());
-        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let image = row_iter.next().unwrap().parse::<String>().unwrap();
         let ip = row_iter.next().unwrap().parse::<String>().unwrap();
@@ -89,7 +86,7 @@ pub fn load_post(base_path: &str, index: usize, peers: usize) -> Vec<Post> {
         let lang = row_iter.next().unwrap().parse::<String>().unwrap();
         let content = row_iter.next().unwrap().parse::<String>().unwrap();
         let length = row_iter.next().unwrap().parse().unwrap();
-        result.push(Post::new(id, created, deleted, image, ip, browser, lang, content, length));
+        result.push(Post::new(id, created, image, ip, browser, lang, content, length));
     }
 
     return result;
@@ -105,13 +102,12 @@ pub fn load_comment(base_path: &str, index: usize, peers: usize) -> Vec<Comment>
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
         let created = parse_datetime(row_iter.next().unwrap());
-        let deleted = parse_datetime(row_iter.next().unwrap());
         let id = row_iter.next().unwrap().parse::<Id>().unwrap();
         let ip = row_iter.next().unwrap().parse::<String>().unwrap();
         let browser = row_iter.next().unwrap().parse::<String>().unwrap();
         let content = row_iter.next().unwrap().parse::<String>().unwrap();
         let length = row_iter.next().unwrap().parse().unwrap();
-        result.push(Comment::new(id, created, deleted, ip, browser, content, length));
+        result.push(Comment::new(id, created, ip, browser, content, length));
     }
 
     return result;
@@ -191,10 +187,9 @@ pub fn load_dynamic_connection(filename: &str, base_path: &str, index: usize, pe
     for row in data.into_iter() {
         let mut row_iter = row.into_iter();
         let created = parse_datetime(row_iter.next().unwrap());
-        let deleted = parse_datetime(row_iter.next().unwrap());
         let id1 = row_iter.next().unwrap().parse::<Id>().unwrap();
         let id2 = row_iter.next().unwrap().parse::<Id>().unwrap();
-        result.push(DynamicConnection::new(created, deleted, id1, id2));
+        result.push(DynamicConnection::new(created, id1, id2));
     }
 
     return result;

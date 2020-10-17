@@ -8,7 +8,6 @@ named_tuple!(
     pub struct Person {
         pub id: Id,
         created: Date,
-        deleted: Date,
         pub first_name: String,
         pub last_name: String,
         gender: String,
@@ -23,7 +22,6 @@ named_tuple!(
     pub struct Forum {
         pub id: Id,
         pub created: Date,
-        deleted: Date,
         pub title: String,
     }
 );
@@ -33,7 +31,6 @@ named_tuple!(
     pub struct Post {
         pub id: Id,
         pub created: Date,
-        deleted: Date,
         image: String,
         ip: String,
         browser: String,
@@ -48,7 +45,6 @@ named_tuple!(
     pub struct Comment {
         pub id: Id,
         created: Date,
-        deleted: Date,
         ip: String,
         browser: String,
         content: String,
@@ -77,7 +73,6 @@ named_tuple!(
     #[derive(Clone, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
     pub struct DynamicConnection {
         pub created: Date,
-        deleted: Date,
         pub a: Id,
         pub b: Id,
     }
