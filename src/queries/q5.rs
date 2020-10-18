@@ -11,13 +11,14 @@ use crate::lib::types::*;
 use crate::lib::helpers::{input_insert_vec, limit, print_trace};
 use differential_dataflow::operators::arrange::ArrangeBySelf;
 use timely::dataflow::operators::Probe;
+use std::time::Instant;
 
 pub fn run(path: String, params: &Vec<String>) {
     // unpack parameters
     let param_tag_ = params[0].clone();
 
     timely::execute_from_args(std::env::args(), move |worker| {
-        //let mut timer = worker.timer();
+        let mut timer = worker.timer();
         let index = worker.index();
         let peers = worker.peers();
 
@@ -172,13 +173,20 @@ pub fn run(path: String, params: &Vec<String>) {
             next_time
         );
 
+        eprintln!("LOADED;{:}", timer.elapsed().as_secs_f64());
+        timer = Instant::now();
+
         // Compute...
         while probe.less_than(tag_input.time()) {
             worker.step();
         }
 
+        eprintln!("CALCULATED;{:}", timer.elapsed().as_secs_f64());
+        timer = Instant::now();
+
         // print results
         print_trace(&mut trace, next_time);
 
+        eprintln!("PRINTED;{:}", timer.elapsed().as_secs_f64());
     }).expect("Timely computation failed");
 }

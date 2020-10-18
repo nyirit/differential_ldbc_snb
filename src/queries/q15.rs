@@ -14,6 +14,7 @@ use differential_dataflow::operators::iterate::Variable;
 use crate::lib::helpers::input_insert_vec;
 use crate::lib::loader::{load_dynamic_connection, load_forum, parse_datetime};
 use crate::lib::types::*;
+use std::time::Instant;
 
 pub fn run(path: String, params: &Vec<String>) {
     // FIXME: WIP not properly implemented.
@@ -28,6 +29,7 @@ pub fn run(path: String, params: &Vec<String>) {
     let param_to_ = params[3].clone();
 
     timely::execute_from_args(std::env::args(), move |worker| {
+        let mut timer = worker.timer();
         let index = worker.index();
         let peers = worker.peers();
 
@@ -131,6 +133,9 @@ pub fn run(path: String, params: &Vec<String>) {
             );
         });
 
+        eprintln!("LOADED;{:}", timer.elapsed().as_secs_f64());
+        timer = Instant::now();
+
         // add inputs
         let next_time: usize  = 1;
         input_insert_vec(
@@ -176,10 +181,14 @@ pub fn run(path: String, params: &Vec<String>) {
         query_input.advance_to(next_time);
         query_input.flush();
 
+        eprintln!("CALCULATED;{:}", timer.elapsed().as_secs_f64());
+        // timer = Instant::now();
+
         while probe.less_than(&1) {
             worker.step();
         }
 
+        // eprintln!("PRINTED;{:}", timer.elapsed().as_secs_f64());
     }).expect("Timely computation failed");
 }
 
