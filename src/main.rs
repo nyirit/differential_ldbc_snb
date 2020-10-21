@@ -23,7 +23,7 @@ fn main() {
         3 => queries::q3::run,
         5 => queries::q5::run,
         7 => queries::q7::run,
-        -14 => queries::ql14::run, // -14, because it was dropped in newer LDBC specs.
+        114 => queries::q114::run, // 114, because it was dropped in newer LDBC specs.
         15 => queries::q15::run,
         _ => panic!("Query {} is not yet implemented.", query_id)
     };
