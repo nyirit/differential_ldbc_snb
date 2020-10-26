@@ -1,7 +1,7 @@
 use super::types::*;
 use unwrap::unwrap;
 
-fn load_data(filename: &str, index: usize, peers: usize) -> Vec<Vec<String>> {
+pub fn load_data(filename: &str, index: usize, peers: usize) -> Vec<Vec<String>> {
     use std::io::{BufRead, BufReader};
     use std::fs::File;
 

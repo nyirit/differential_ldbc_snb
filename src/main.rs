@@ -16,6 +16,8 @@ fn main() {
 
     let path = args.remove(0);
 
+    let change_path = args.remove(0);
+
     // User load_bi_param to load a set of predefined query parameters
     // let params = lib::loader::load_bi_param(path.as_str(), query_id);
 
@@ -28,5 +30,5 @@ fn main() {
         _ => panic!("Query {} is not yet implemented.", query_id)
     };
 
-    runner(path.clone(), &args);
+    runner(path.clone(), change_path.clone(), &args);
 }

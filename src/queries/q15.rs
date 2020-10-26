@@ -16,7 +16,7 @@ use crate::lib::loader::{load_dynamic_connection, load_forum, parse_datetime};
 use crate::lib::types::*;
 use std::time::Instant;
 
-pub fn run(path: String, params: &Vec<String>) {
+pub fn run(path: String, change_path: String, params: &Vec<String>) {
     // FIXME: WIP not properly implemented.
 
     // Based on the work of Frank McSherry:
@@ -181,7 +181,7 @@ pub fn run(path: String, params: &Vec<String>) {
         query_input.advance_to(next_time);
         query_input.flush();
 
-        eprintln!("CALCULATED;{:}", timer.elapsed().as_secs_f64());
+        eprintln!("CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
         // timer = Instant::now();
 
         while probe.less_than(&1) {

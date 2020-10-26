@@ -16,7 +16,7 @@ use differential_dataflow::operators::arrange::ArrangeBySelf;
 use timely::dataflow::operators::Probe;
 use std::time::Instant;
 
-pub fn run(path: String, params: &Vec<String>) {
+pub fn run(path: String, change_path: String, params: &Vec<String>) {
     // unpack parameters
     let param_begin_ = params[0].clone();
     let param_end_ = params[1].clone();
@@ -167,7 +167,7 @@ pub fn run(path: String, params: &Vec<String>) {
             worker.step();
         }
 
-        eprintln!("CALCULATED;{:}", timer.elapsed().as_secs_f64());
+        eprintln!("CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
         timer = Instant::now();
 
         // print results

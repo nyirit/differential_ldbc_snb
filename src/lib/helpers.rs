@@ -63,20 +63,20 @@ pub fn input_insert_vec<T: Data>(data: Vec<T>, input: &mut InputSession<usize, T
 
 pub fn print_trace<Tr>(trace: &mut Tr, round: usize)
 where
-    Tr: TraceReader<Time=usize, Key=Vec<Vec<String>>> + Clone,
+    Tr: TraceReader<Time=usize, R=isize, Key=Vec<Vec<String>>> + Clone,
     Tr::Batch: BatchReader<Tr::Key, Tr::Val, usize, Tr::R>,
     Tr::Cursor: Cursor<Tr::Key, Tr::Val, usize, Tr::R>,
 {
     if let Some((mut cursor, storage)) = trace.cursor_through(&[round+1]) {
         while let Some(key) = cursor.get_key(&storage) {
             while let Some(_val) = cursor.get_val(&storage) {
-                let count: isize = 1;
-                /*FIXME is this needed?
+                let mut count = 0;
                 cursor.map_times(&storage, |time, &diff| {
                     if time.le(&(round+1)) {
                         count += diff;
                     }
-                });*/
+                });
+
                 if count > 0 {
                     for row in key {
                         println!("{}", row.join("|"));

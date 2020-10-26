@@ -15,7 +15,7 @@ use crate::lib::types::*;
 use crate::lib::helpers::{limit, format_timestamp, input_insert_vec, print_trace};
 use std::time::Instant;
 
-pub fn run(path: String, params: &Vec<String>) {
+pub fn run(path: String, change_path: String, params: &Vec<String>) {
     // unpack parameters
     let param_tag_class_ = params[0].clone();
     let param_country_ = params[1].clone();
@@ -43,7 +43,7 @@ pub fn run(path: String, params: &Vec<String>) {
                 mut place_input,
                 mut place_is_part_of_place_input,
                 mut forum_hasmod_input,
-                mut located_in_input,
+                mut located_in_input
             ) =
         worker.dataflow::<usize,_,_>(|scope| {
             let (forum_input, forum) = scope.new_collection::<Forum, _>();
@@ -125,7 +125,7 @@ pub fn run(path: String, params: &Vec<String>) {
         });
 
         // add inputs
-        let next_time: usize = 1;
+        let mut next_time: usize = 1;
         input_insert_vec(load_forum(path.as_str(), index, peers), &mut forum_input, next_time);
         input_insert_vec(load_tag_class(path.as_str(), index, peers), &mut tag_classes_input, next_time);
         input_insert_vec(
@@ -164,14 +164,82 @@ pub fn run(path: String, params: &Vec<String>) {
         timer = Instant::now();
 
         // Compute...
-        while probe.less_than(tag_classes_input.time()) {
+        while probe.less_than(&next_time) {
             worker.step();
         }
 
-        eprintln!("CALCULATED;{:.20}", timer.elapsed().as_secs_f64());
+        eprintln!("CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
         timer = Instant::now();
 
         // print results
         print_trace(&mut trace, next_time);
+
+        if change_path.eq(&"-".to_string()) {
+            eprintln!("No change set was given.");
+            return;
+        }
+
+        println!(" ---------------------------------------------------------------------- ");
+
+        // introduce change set
+        next_time += 1;
+
+        // parse change set file
+        for mut change_row in load_data(change_path.as_str(), index, peers) {
+            let create = match change_row.remove(0).as_str() {
+                "create" => true,
+                "remove" => false,
+                x => { panic!("Unknown change. It should be 'remove' or 'create': {}", x); }
+            };
+
+            let input = change_row.remove(0);
+
+            match input.as_str() {
+                "person-locatedin-place" => {
+                    let mut row_iter = change_row.into_iter();
+                    let created = parse_datetime(row_iter.next().unwrap());
+                    let id1 = row_iter.next().unwrap().parse::<Id>().unwrap();
+                    let id2 = row_iter.next().unwrap().parse::<Id>().unwrap();
+                    let d = DynamicConnection::new(created, id1, id2);
+                    if create {
+                        located_in_input.insert(d);
+                    } else {
+                        located_in_input.remove(d);
+                    }
+                },
+                x => { panic!("Unknown change type: {}", x); }
+            }
+        }
+
+        // advance and flush all inputs...
+        located_in_input.advance_to(next_time);
+        located_in_input.flush();
+        forum_input.advance_to(next_time);
+        forum_input.flush();
+        tag_classes_input.advance_to(next_time);
+        tag_classes_input.flush();
+        tag_hastype_tagclass_input.advance_to(next_time);
+        tag_hastype_tagclass_input.flush();
+        post_hastag_tag_input.advance_to(next_time);
+        post_hastag_tag_input.flush();
+        forum_cointainerof_post_input.advance_to(next_time);
+        forum_cointainerof_post_input.flush();
+        place_input.advance_to(next_time);
+        place_input.flush();
+        place_is_part_of_place_input.advance_to(next_time);
+        place_is_part_of_place_input.flush();
+        forum_hasmod_input.advance_to(next_time);
+        forum_hasmod_input.flush();
+
+        // Compute change set...
+        while probe.less_than(&next_time) {
+            worker.step();
+        }
+
+        eprintln!("CHANGE_CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
+
+        // print changed results
+        print_trace(&mut trace, next_time);
+
     }).expect("Timely computation failed");
 }
