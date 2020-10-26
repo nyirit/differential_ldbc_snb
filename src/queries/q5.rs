@@ -186,7 +186,5 @@ pub fn run(path: String, params: &Vec<String>) {
 
         // print results
         print_trace(&mut trace, next_time);
-
-        eprintln!("PRINTED;{:}", timer.elapsed().as_secs_f64());
     }).expect("Timely computation failed");
 }

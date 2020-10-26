@@ -188,7 +188,6 @@ pub fn run(path: String, params: &Vec<String>) {
             worker.step();
         }
 
-        // eprintln!("PRINTED;{:}", timer.elapsed().as_secs_f64());
     }).expect("Timely computation failed");
 }
 
