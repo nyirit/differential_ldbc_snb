@@ -169,7 +169,6 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
         }
 
         eprintln!("CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
-        timer = Instant::now();
 
         // print results
         print_trace(&mut trace, next_time);
@@ -183,6 +182,8 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
 
         // introduce change set
         next_time += 1;
+        timer = Instant::now();
+
 
         // parse change set file
         for mut change_row in load_data(change_path.as_str(), index, peers) {

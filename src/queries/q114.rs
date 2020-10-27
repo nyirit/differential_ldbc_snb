@@ -9,7 +9,7 @@ use timely::dataflow::ProbeHandle;
 use differential_dataflow::input::Input;
 
 use crate::lib::helpers::{print_trace, input_insert_vec, limit};
-use crate::lib::loader::{load_person, load_dynamic_connection, parse_datetime};
+use crate::lib::loader::{load_person, load_dynamic_connection, parse_datetime, load_data};
 use crate::lib::types::*;
 use differential_dataflow::operators::{Count, Iterate, Join, Threshold, Consolidate};
 use differential_dataflow::operators::arrange::ArrangeBySelf;
@@ -140,7 +140,7 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
             });
 
         // add inputs
-        let next_time: usize = 1;
+        let mut next_time: usize = 1;
         input_insert_vec(load_person(path.as_str(), index, peers), &mut person_input, next_time);
         input_insert_vec(
             load_dynamic_connection("dynamic/post_hasCreator_person_0_0.csv", path.as_str(), index, peers),
@@ -168,9 +168,65 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
         }
 
         eprintln!("CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
-        timer = Instant::now();
 
         // print results
+        print_trace(&mut trace, next_time);
+
+        if change_path.eq(&"-".to_string()) {
+            eprintln!("No change set was given.");
+            return;
+        }
+
+        println!(" ---------------------------------------------------------------------- ");
+
+        // introduce change set
+        next_time += 1;
+        timer = Instant::now();
+
+        // parse change set file
+        for mut change_row in load_data(change_path.as_str(), index, peers) {
+            let create = match change_row.remove(0).as_str() {
+                "create" => true,
+                "remove" => false,
+                x => { panic!("Unknown change. It should be 'remove' or 'create': {}", x); }
+            };
+
+            let input = change_row.remove(0);
+
+            let mut row_iter = change_row.into_iter();
+            let created = parse_datetime(row_iter.next().unwrap());
+            let id1 = row_iter.next().unwrap().parse::<Id>().unwrap();
+            let id2 = row_iter.next().unwrap().parse::<Id>().unwrap();
+            let d = DynamicConnection::new(created, id1, id2);
+
+            match input.as_str() {
+                "post-hascreator-person" => {
+                    if create {
+                        post_has_creator_input.insert(d);
+                    } else {
+                        post_has_creator_input.remove(d);
+                    }
+                },
+                x => { panic!("Unknown change type: {}", x); }
+            }
+        }
+
+        // advance and flush all inputs...
+        reply_of_input.advance_to(next_time);
+        reply_of_input.flush();
+        person_input.advance_to(next_time);
+        person_input.flush();
+        post_has_creator_input.advance_to(next_time);
+        post_has_creator_input.flush();
+
+        // Compute change set...
+        while probe.less_than(&next_time) {
+            worker.step();
+        }
+
+        eprintln!("CHANGE_CALCULATED;{:.10}", timer.elapsed().as_secs_f64());
+
+        // print changed results
         print_trace(&mut trace, next_time);
     }).expect("Timely computation failed");
 }
