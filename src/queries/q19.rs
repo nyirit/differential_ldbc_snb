@@ -15,7 +15,6 @@ use differential_dataflow::operators::arrange::ArrangeBySelf;
 use timely::dataflow::operators::{Probe, Map, Delay};
 use std::time::Instant;
 use std::cmp::{min, max};
-use timely::progress::frontier::MutableAntichainFilter;
 
 pub fn run(path: String, change_path: String, params: &Vec<String>) {
     // unpack parameters
