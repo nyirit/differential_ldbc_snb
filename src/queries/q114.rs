@@ -60,7 +60,7 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
                 // get all direct replies of filtered posts, add also created datetime
                 let trans_initial = reply_of
                     .map(|conn| (conn.b().clone(), (conn.a().clone(), conn.created().clone()))) // -> parent_id, (child_id, child_created)
-                    .semijoin( // only keep direct replies
+                    .semijoin( // only keep direct replies of filtered posts
                         &filtered_posts.map(|conn| conn.a().clone()) // -> post_id
                     )
                     ;
@@ -86,7 +86,7 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
                             .map(|(_child, ((parent, _ccreated), (gchild, gcreated)))| (parent, (gchild, gcreated)))
                             // concat initial values to have all the steps
                             .concat(&initial)
-                            // ensure convergence, as final values may duplicate
+                            // ensure convergence, as final values may duplicate todo: probably not needed
                             .distinct()
                             ;
                     })

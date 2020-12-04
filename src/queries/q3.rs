@@ -67,7 +67,7 @@ pub fn run(path: String, change_path: String, params: &Vec<String>) {
                 );
 
             // get post count for forums, which contain the desired tagclass
-            // (forum_id, count, title, created)
+            // (forum_id, (count, title, created))
             let counted_posts = post_hastag_tag
                 .map(|x| (x.b().clone(), x.a().clone()))  // (Tag.id, Post.id)
                 .semijoin(&tag_ids)
